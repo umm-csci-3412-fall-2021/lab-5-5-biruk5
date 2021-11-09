@@ -1,6 +1,12 @@
 package xrate;
 
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * Provide access to basic currency exchange rate services.
@@ -16,9 +22,11 @@ public class ExchangeRateReader {
      * days will be constructed from that URL by appending the year, month, and day;
      * the URL for 25 June 2010, for example, would be
      * http://api.finance.xaviermedia.com/api/2010/06/25.xml
-     * 
+     *
      * @param baseURL the base URL for requests
      */
+    String baseURL;
+
     public ExchangeRateReader(String baseURL) {
         /*
          * DON'T DO MUCH HERE! People often try to do a lot here, but the action is
@@ -27,8 +35,7 @@ public class ExchangeRateReader {
          * accessible in the two key functions. (You'll need it there to construct
          * the full URL.)
          */
-
-        // TODO Your code here
+        this.baseURL = baseURL;
 
         // Reads the Fixer.io API access key from the appropriate
         // environment variable.
@@ -36,10 +43,17 @@ public class ExchangeRateReader {
         readAccessKey();
     }
 
+    // Gets the JSON Object for the given URL.
+    private JSONObject fetchDataFromURL(String url) throws IOException, MalformedURLException {
+        InputStream stream = new URL(url).openStream();
+        JSONObject json = new JSONObject(new JSONTokener(stream));
+        return json.getJSONObject("rates");
+    }
+
     /**
      * This reads the `fixer_io` access key from from the system environment and
      * assigns it to the field `accessKey`.
-     * 
+     * <p>
      * You don't have to change anything here.
      */
     private void readAccessKey() {
@@ -57,7 +71,7 @@ public class ExchangeRateReader {
     /**
      * Get the exchange rate for the specified currency against the base currency
      * (the Euro) on the specified date.
-     * 
+     *
      * @param currencyCode the currency code for the desired currency
      * @param year         the year as a four digit integer
      * @param month        the month as an integer (1=Jan, 12=Dec)
@@ -68,7 +82,7 @@ public class ExchangeRateReader {
     public float getExchangeRate(String currencyCode, int year, int month, int day) throws IOException {
         /*
          * Here you should:
-         * 
+         *
          *   - Construct the appropriate URL
          *     - This needs to have the date (properly formatted)
          *       and access key. See the Fixer.io documentation for
@@ -81,19 +95,23 @@ public class ExchangeRateReader {
          *     - You'll need to extract the "rates" (sub)object from the parsed
          *       JSON object.
          *     - You'll need to get the `float` associated with the desired
-         *       currency code from the "rates" object. 
+         *       currency code from the "rates" object.
          */
 
-        // TODO Your code here
+        String mo = safeDate(month);
+        String dy = safeDate(day);
+
+        String url = baseURL + year + "-" + mo + "-" + dy + "?access_key=" + accessKey;
 
         // Remove the next line when you've implemented this method.
-        throw new UnsupportedOperationException();
+        JSONObject rates = fetchDataFromURL(url);
+        return rates.getFloat(currencyCode);
     }
 
     /**
      * Get the exchange rate of the first specified currency against the second on
      * the specified date.
-     * 
+     *
      * @param fromCurrency the currency code we're exchanging *from*
      * @param toCurrency   the currency code we're exchanging *to*
      * @param year         the year as a four digit integer
@@ -108,15 +126,22 @@ public class ExchangeRateReader {
          * This is similar to the previous method except that you have to get
          * the two currency rates and divide one by the other to get their
          * relative exchange rate.
-         * 
+         *
          * DON'T FORGET HOW TO PROGRAM! Extract helper functions to clarify
          * what's going on, and try to avoid duplicate logic between this and
          * the previous method.
          */
-        
-        // TODO Your code here
+
+        String mo = safeDate(month);
+        String dy = safeDate(day);
+
+        String url = baseURL + year + "-" + mo + "-" + dy + "?access_key=" + accessKey;
 
         // Remove the next line when you've implemented this method.
-        throw new UnsupportedOperationException();
+        JSONObject rates = fetchDataFromURL(url);
+        return rates.getFloat(fromCurrency) / rates.getFloat(toCurrency);
+    }
+    private static String safeDate(int a){
+        return Integer.toString(a).length() == 1 ? "0" + a : a + "";
     }
 }
