@@ -14,6 +14,7 @@ import java.net.URL;
 public class ExchangeRateReader {
 
     private String accessKey;
+    private final String baseURL;
 
     /**
      * Construct an exchange rate reader using the given base URL. All requests will
@@ -25,8 +26,6 @@ public class ExchangeRateReader {
      *
      * @param baseURL the base URL for requests
      */
-    String baseURL;
-
     public ExchangeRateReader(String baseURL) {
         /*
          * DON'T DO MUCH HERE! People often try to do a lot here, but the action is
